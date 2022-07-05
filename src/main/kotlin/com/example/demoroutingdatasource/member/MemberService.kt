@@ -127,4 +127,18 @@ class MemberService(
         val getMember = service2.getMemberReadOnlyAndRequire(5)
         return Result(master = ret, slave = getMember)
     }
+
+    @Transactional(readOnly = true)
+    fun combi4_1(member: Member): Result {
+        val ret = service2.saveWithRequrieNew(member)
+        val getMember = service2.getMemberReadOnlyAndRequireNew(5)
+        return Result(master = ret, slave = getMember)
+    }
+
+    @Transactional(readOnly = true)
+    fun combi4_2(member: Member): Result {
+        val getMember = service2.getMemberReadOnlyAndRequireNew(5)
+        val ret = service2.saveWithRequrieNew(member)
+        return Result(master = ret, slave = getMember)
+    }
 }

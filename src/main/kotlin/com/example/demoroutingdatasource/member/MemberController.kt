@@ -70,4 +70,21 @@ class MemberController(
     fun combi4(@RequestBody member: Member): Result {
         return service.combi4(member)
     }
+
+
+    /*
+    @Transactional(readonly=true) 안에서 @Transactional(readonly = true)랑 @Transactional 메소드 호출하면 master 바라봄
+     */
+    @PostMapping("/api/members/combi4-1")
+    fun combi4_1(@RequestBody member: Member): Result {
+        return service.combi4_1(member)
+    }
+
+    /*
+    @Transactional(readonly=true) 안에서 @Transactional(readonly = true)랑 @Transactional 메소드 호출하면 slave 바라봄
+     */
+    @PostMapping("/api/members/combi4-2")
+    fun combi4_2(@RequestBody member: Member): Result {
+        return service.combi4_2(member)
+    }
 }
