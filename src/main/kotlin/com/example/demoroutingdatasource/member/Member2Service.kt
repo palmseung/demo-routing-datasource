@@ -4,7 +4,6 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.support.TransactionSynchronizationManager
 
 @Service
 class Member2Service(
@@ -13,20 +12,32 @@ class Member2Service(
 
     val log = KotlinLogging.logger { }
 
-//    @Transactional(readOnly = true)
+    @Transactional
+    fun getMember(id: Long): Member? {
+        val member = repository.findById(id).orElse(null)
+        return member
+    }
+
+    @Transactional(readOnly = true)
+    fun getMemberReadOnlyAndRequire(id: Long): Member? {
+        val member = repository.findById(id).orElse(null)
+        return member
+    }
+
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
-    fun getMember2(id: Long): Member? {
-        log.info { ">>> isActive = ${TransactionSynchronizationManager.isActualTransactionActive()}" }
-        log.info { ">>>>> isReadOnly = ${TransactionSynchronizationManager.isCurrentTransactionReadOnly()}" }
-        log.info { ">>>>> currentTransaction = ${TransactionSynchronizationManager.getCurrentTransactionName()}" }
+    fun getMemberReadOnlyAndRequireNew(id: Long): Member? {
         val member = repository.findById(id).orElse(null)
         return member
     }
 
     @Transactional
-    fun save2(member: Member): Member? {
+    fun save(member: Member): Member? {
+        return repository.save(member)
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun saveWithRequrieNew(member: Member): Member? {
         val ret = repository.save(member)
-//        val ret = repository.saveAndFlush(member)
         return ret
     }
 

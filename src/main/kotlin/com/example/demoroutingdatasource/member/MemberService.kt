@@ -5,24 +5,77 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionSynchronizationManager
+import javax.persistence.Tuple
+import javax.sql.DataSource
 
 
 @Service
 class MemberService(
     @Autowired
     val repository: MemberRepository,
+
     @Autowired
-    val service2: Member2Service
+    val service2: Member2Service,
+
+    @Autowired
+    val dataSource: DataSource
 ) {
 
     val log = KotlinLogging.logger { }
 
     @Transactional
-    fun save(member: Member): Member {
-        log.info { ">>>>> isReadOnly = ${TransactionSynchronizationManager.isCurrentTransactionReadOnly()}" }
-        log.info { ">>>>> currentTransacition = ${TransactionSynchronizationManager.getCurrentTransactionName()}" }
-
+    fun getAndSaveWithRequire(member: Member): Member {
         val saved = repository.save(member)
+        return saved
+    }
+
+    @Transactional
+    fun getAndSaveWithRequireNew(member: Member): Member {
+        val findById = service2.getMemberReadOnlyAndRequireNew(3)
+        val saved = repository.save(member)
+
+        log.info { "saved = $saved, findById = $findById" }
+
+        return saved
+    }
+
+    @Transactional(readOnly = true)
+    fun getAndSaveWithRequireInReadOnly(member: Member): Member {
+        val findById = service2.getMemberReadOnlyAndRequire(3)
+        val saved = repository.save(member)
+
+        log.info { "saved = $saved, findById = $findById" }
+
+        return saved
+    }
+
+    @Transactional(readOnly = true)
+    fun getAndSaveAndFlushWithRequireInReadOnly(member: Member): Member {
+        val findById = service2.getMemberReadOnlyAndRequire(3)
+        val saved = repository.save(member)
+
+        log.info { "saved = $saved, findById = $findById" }
+
+        return saved
+    }
+
+    @Transactional(readOnly = true)
+    fun getAndSaveWithRequireNewInReadOnly(member: Member): Member {
+        val findById = service2.getMemberReadOnlyAndRequireNew(3)
+        val saved = repository.save(member)
+
+        log.info { "saved = $saved, findById = $findById" }
+
+        return saved
+    }
+
+    @Transactional
+    fun saveFlushAndGetInReadOnlyRequireNew(member: Member): Member {
+        val saved = repository.save(member)
+        val findById = service2.getMemberReadOnlyAndRequireNew(3)
+
+        log.info { "saved = $saved, findById = $findById" }
+
         return saved
     }
 
@@ -34,22 +87,44 @@ class MemberService(
     }
 
     @Transactional
-    fun combi(member: Member): Member? {
-        log.info { ">>>>> isReadOnly1 = ${TransactionSynchronizationManager.isCurrentTransactionReadOnly()}" }
-        log.info { ">>>>> currentTransacition1 = ${TransactionSynchronizationManager.getCurrentTransactionName()}" }
-        val member2 = service2.getMember2(5)
-        save(member)
-        return member2
+    fun combi(member: Member): Result {
+        val getMember = service2.getMemberReadOnlyAndRequire(5)
+        val ret = service2.save(member)
+        return Result(master = ret, slave = getMember)
     }
 
     @Transactional
-    fun combi2(member: Member): Member? {
-        log.info { ">>> isActive = ${TransactionSynchronizationManager.isActualTransactionActive()}" }
-        val ret1 = service2.getMember2(5)
-        log.info { "ret1 = $ret1" }
-        val ret = service2.save2(member)
-        log.info { "ret = ${ret}" }
-        return ret
+    fun combi2(member: Member): Result {
+        val getMember = service2.getMemberReadOnlyAndRequireNew(5)
+        val ret = service2.save(member)
+        return Result(master = ret, slave = getMember)
     }
 
+    @Transactional(readOnly = true)
+    fun combi3(member: Member): Result {
+        val ret = service2.save(member)
+        val getMember = service2.getMemberReadOnlyAndRequire(5)
+        return Result(master = ret, slave = getMember)
+    }
+
+    @Transactional(readOnly = true)
+    fun combi3_1(member: Member): Result {
+        val ret = service2.saveWithRequrieNew(member)
+        val getMember = service2.getMemberReadOnlyAndRequire(5)
+        return Result(master = ret, slave = getMember)
+    }
+
+    @Transactional(readOnly = true)
+    fun combi3_2(member: Member): Result {
+        val ret = service2.saveWithRequrieNew(member)
+        val getMember = service2.getMemberReadOnlyAndRequireNew(5)
+        return Result(master = ret, slave = getMember)
+    }
+
+    @Transactional(readOnly = true)
+    fun combi4(member: Member): Result {
+        val ret = service2.saveWithRequrieNew(member)
+        val getMember = service2.getMemberReadOnlyAndRequire(5)
+        return Result(master = ret, slave = getMember)
+    }
 }

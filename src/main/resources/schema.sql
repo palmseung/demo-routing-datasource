@@ -1,0 +1,1 @@
+create table member (id bigint not null auto_increment, is_active bit not null, name varchar(255), primary key (id)) engine=InnoDB
