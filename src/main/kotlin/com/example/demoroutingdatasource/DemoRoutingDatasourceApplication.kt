@@ -11,5 +11,6 @@ import org.springframework.boot.runApplication
 class DemoRoutingDatasourceApplication
 
 fun main(args: Array<String>) {
+	// test3
 	runApplication<DemoRoutingDatasourceApplication>(*args)
 }
