@@ -1,4 +1,4 @@
-package com.example.demoroutingdatasource.config.db
+package com.example.demoroutingdatasource.config.db.routing
 
 class RoutingDatasourceContextHolder {
 

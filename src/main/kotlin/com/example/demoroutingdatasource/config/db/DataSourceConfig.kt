@@ -1,5 +1,6 @@
 package com.example.demoroutingdatasource.config.db
 
+import com.example.demoroutingdatasource.config.db.routing.RoutingDataSource
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.ConfigurationProperties
