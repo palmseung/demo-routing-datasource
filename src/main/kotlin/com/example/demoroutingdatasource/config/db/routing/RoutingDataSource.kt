@@ -15,7 +15,7 @@ open class RoutingDataSource(
     init {
         super.setTargetDataSources(
             mapOf(
-                DatasourceType.Master to rwDataSource,
+                DatasourceType.MASTER to rwDataSource,
                 DatasourceType.SLAVE to roDataSource,
             )
         )
@@ -27,7 +27,7 @@ open class RoutingDataSource(
             DatasourceType.SLAVE
         } else {
             log.info("Datasource is routed to read-write")
-            DatasourceType.Master
+            DatasourceType.MASTER
         }
     }
 }
