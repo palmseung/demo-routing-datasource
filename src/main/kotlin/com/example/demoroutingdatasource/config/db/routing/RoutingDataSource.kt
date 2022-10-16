@@ -1,4 +1,4 @@
-package com.example.demoroutingdatasource.config.db
+package com.example.demoroutingdatasource.config.db.routing
 
 import mu.KotlinLogging
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource
@@ -15,8 +15,8 @@ open class RoutingDataSource(
     init {
         super.setTargetDataSources(
             mapOf(
-                DatasourceType.READ_WRITE to rwDataSource,
-                DatasourceType.READ_ONLY to roDataSource,
+                DatasourceType.MASTER to rwDataSource,
+                DatasourceType.SLAVE to roDataSource,
             )
         )
     }
@@ -24,10 +24,10 @@ open class RoutingDataSource(
     override fun determineCurrentLookupKey(): Any? {
         return if (TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
             log.info("Datasource is routed to readonly")
-            DatasourceType.READ_ONLY
+            DatasourceType.SLAVE
         } else {
             log.info("Datasource is routed to read-write")
-            DatasourceType.READ_WRITE
+            DatasourceType.MASTER
         }
     }
 }
