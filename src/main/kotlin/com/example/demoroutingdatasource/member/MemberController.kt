@@ -1,90 +1,85 @@
 package com.example.demoroutingdatasource.member
 
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.*
+import com.example.demoroutingdatasource.member.domain.Member
+import com.example.demoroutingdatasource.member.service.MemberOuterService
+import com.example.demoroutingdatasource.member.service.MemberServiceToSave
+import mu.KotlinLogging
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MemberController(
-    @Autowired
-    val service: MemberService,
-
-    @Autowired
-    val service2: Member2Service
+    private val service: MemberServiceToSave,
+    private val outer: MemberOuterService
 ) {
 
-    @PostMapping("/api/members")
-    fun save(@RequestBody member: Member): Member? {
-        return service2.save(member)
+    private val log = KotlinLogging.logger { }
+
+    @PostMapping("/members-master")
+    fun saveAllMaster(): List<Member> {
+        val members = service.saveAllWithRW(
+            listOf(
+                Member(name = "Master_Jay", isActive = true),
+                Member(name = "Master_Haon", isActive = true),
+                Member(name = "Master_Jessie", isActive = true)
+            )
+        )
+        log.info { ">>>> master db initialized. members = $members" }
+        return members
     }
 
-    @GetMapping("/api/members/{id}")
-    fun get(@PathVariable id: Long): Member? {
-        return service.getMember(id)
+    @PostMapping("/members-slave")
+    fun saveAllSlave(): List<Member> {
+        val members = service.saveAllWithRo(
+            listOf(
+                Member(name = "Slave_Jay", isActive = true),
+                Member(name = "Slave_Haon", isActive = true),
+                Member(name = "Slave_Jessie", isActive = true)
+            )
+        )
+        log.info { ">>>> slave db initialized. members = $members" }
+        return members
     }
 
-    /*
-    @Transactional 안에서 @Transactional(readonly=true) 메소드 호출해도 master 바라봄
-     */
-    @PostMapping("/api/members/combi1")
-    fun combi1(@RequestBody member: Member): Result {
-        return service.combi(member)
+    @GetMapping("/members/tx-with-in-ro-out-rw")
+    fun getWithInRoOutRw(): Member? {
+        return outer.getByIdWithInnerRoAndOuterRW(id = 2)
     }
 
-    /*
-    @Transactional 안에서 @Transactional(readonly=true, propagation=REQUIRE_NEW) 메소드 호출하면 slave 바라봄
-     */
-    @PostMapping("/api/members/combi2")
-    fun combi2(@RequestBody member: Member): Result {
-        return service.combi2(member)
+    @GetMapping("/members/tx-with-in-rw-out-ro")
+    fun getWithInRwOutRo(): Member? {
+        return outer.getByIdWithInnerRWAndOuterRO(id = 2)
     }
 
-    /*
-    @Transactional(readonly=true) 안에서 @Transactional(readonly = true)랑 @Transactional 메소드 모두 slave 바라봄 (insert도 slave로 됨)
-     */
-    @PostMapping("/api/members/combi3")
-    fun combi3(@RequestBody member: Member): Result {
-        return service.combi3(member)
+    @GetMapping("/members/tx-with-in-ro-out-none")
+    fun getWithInRoOutNone(): Member? {
+        return outer.getByIdWIthInnerROAndOuterNone(id = 2)
     }
 
-    /*
-    @Transactional(readonly=true) 안에서 @Transactional(readonly = true)랑 @Transactional 메소드 모두 master 바라봄 (insert도 slave로 됨)
-     */
-    @PostMapping("/api/members/combi3-1")
-    fun combi3_1(@RequestBody member: Member): Result {
-        return service.combi3_1(member)
+    @GetMapping("/members/tx-with-in-rw-out-none")
+    fun getWithInRwOutNone(): Member? {
+        return outer.getByIdWithInnerRWAndOuterNone(id = 2)
     }
 
-
-    /*
-    @Transactional(readonly=true) 안에서 @Transactional(readonly = true)랑 @Transactional 메소드 모두 master 바라봄 (insert도 slave로 됨)
-     */
-    @PostMapping("/api/members/combi3-2")
-    fun combi3_2(@RequestBody member: Member): Result {
-        return service.combi3_2(member)
+    @GetMapping("/members/tx-with-in-ro-with-require-new-and-out-rw")
+    fun getWithInRoWithRequireNewAndOutRw(): Member? {
+        return outer.getByWithInnerROWithRequireNewAndOuterRW(id = 2)
     }
 
-    /*
-    @Transactional(readonly=true) 안에서 @Transactional(readonly = true)랑 @Transactional 메소드 호출하면 master 바라봄
-     */
-    @PostMapping("/api/members/combi4")
-    fun combi4(@RequestBody member: Member): Result {
-        return service.combi4(member)
+    @GetMapping("/members/tx-with-in-rw-with-require-new-and-out-ro")
+    fun getWithInRwWithRequireNewAndOutRo(): Member? {
+        return outer.getByWithInnerRWWithRequireNewAndOuterRO(id = 2)
     }
 
-
-    /*
-    @Transactional(readonly=true) 안에서 @Transactional(readonly = true)랑 @Transactional 메소드 호출하면 master 바라봄
-     */
-    @PostMapping("/api/members/combi4-1")
-    fun combi4_1(@RequestBody member: Member): Result {
-        return service.combi4_1(member)
+    @GetMapping("/members/tx-with-in-ro-with-fixed-and-out-rw")
+    fun getWithInRoWithFixedAnnotationAndOutRw(): Member? {
+        return outer.getInnerROWithFixedAnnotationAndOuterRW(id = 2)
     }
 
-    /*
-    @Transactional(readonly=true) 안에서 @Transactional(readonly = true)랑 @Transactional 메소드 호출하면 slave 바라봄
-     */
-    @PostMapping("/api/members/combi4-2")
-    fun combi4_2(@RequestBody member: Member): Result {
-        return service.combi4_2(member)
+    @GetMapping("/members/tx-with-in-rw-with-fixed-and-out-ro")
+    fun getWithInRWWithFixedAnnotationAndOutRO(): Member? {
+        return outer.getInnerRWWithFixedAnnotationAndOuterRO(id = 2)
     }
+
 }
